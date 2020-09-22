@@ -77,11 +77,13 @@ GLuint createShader(GLenum shaderType, const char *src){
         GLint infoLogLen = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLen);
 
-        GLchar* infoLog = (GLchar*)malloc(infoLogLen);
+        GLchar* infoLog = (GLchar*)new GLchar[infoLogLen];
         glGetShaderInfoLog(shader, infoLogLen, NULL, infoLog);
         LOGI("Could not compile %s shader:\n%s\n",
               shaderType == GL_VERTEX_SHADER ? "vertex" : "fragment",
               infoLog);
+        delete[] infoLog;
+
         glDeleteShader(shader);
         return 0;
     }
