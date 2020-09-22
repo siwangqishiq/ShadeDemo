@@ -3,6 +3,7 @@ package xyz.panyi.shadedemo;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -23,6 +24,8 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
         setEGLContextClientVersion(3);
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         setRenderer(this);
+
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
     }
 
     @Override
@@ -46,4 +49,20 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
         super.onDetachedFromWindow();
     }
 
-}
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean result = false;
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                result = true;
+                break;
+//            case MotionEvent.ACTION_CANCEL:
+//            case MotionEvent.ACTION_UP:
+//                result = true;
+//                break;
+        }
+
+        NativeBridge.onTouchEvent(event.getAction() , event.getX() , event.getY());
+        return result;
+    }
+}//end class

@@ -19,4 +19,6 @@ public class NativeBridge {
     public static native void free();
 
     public static native void setNativeAssertManager(AssetManager assetManager);
+
+    public static native void onTouchEvent(int event , float x , float y);
 }

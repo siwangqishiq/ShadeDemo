@@ -13,7 +13,18 @@
 #include <string>
 #include <android/asset_manager_jni.h>
 #include <android/asset_manager.h>
+#include <GLES3/gl3.h>
 
+//从Assets中读取文本文件
 std::string readAssetTextFile( const char *filename);
+
+//从Assets中载入顶点 片段着色器代码
+GLuint loadShaderFromAssets(const char *vertexPath , const char *fragPath);
+
+//创建着色器程序
+GLuint loadShaderProgram(const char *vShaderSrc, const GLchar *fShaderSrc);
+
+//根据源码创建指定类型的着色器
+GLuint createShader(GLenum shaderType, const char *src);
 
 #endif //SIMPLEPLAYER_LOG_H
