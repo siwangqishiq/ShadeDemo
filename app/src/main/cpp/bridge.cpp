@@ -2,9 +2,13 @@
 #include <string>
 #include <android/asset_manager_jni.h>
 #include <android/asset_manager.h>
+#include <media/NdkMediaCodec.h>
+#include <media/NdkMediaExtractor.h>
+#include <media/NdkMediaFormat.h>
 #include "Log.h"
 #include "Util.h"
 #include "VideoApp.h"
+
 
 AAssetManager* mAssetManager;
 VideoApp *videoApp;
@@ -70,3 +74,8 @@ Java_xyz_panyi_shadedemo_NativeBridge_setNativeAssertManager(JNIEnv *env, jclass
 
 
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_playVideoFile(JNIEnv *env, jclass clazz, jstring path) {
+
+}

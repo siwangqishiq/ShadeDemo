@@ -43,4 +43,5 @@ target_link_libraries( # Specifies the target library.
         demo
         ${OPENGL_LIB}
         android
-        ${log-lib} )
+        ${log-lib}
+        mediandk)
