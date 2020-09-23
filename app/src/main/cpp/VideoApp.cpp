@@ -4,7 +4,6 @@
 
 #include "VideoApp.h"
 
-
 void VideoApp::init() {
     //wait resize
 }
@@ -14,6 +13,7 @@ void VideoApp::resize(int w, int h) {
     this->viewHeight = h;
 
     onGetViewSize();
+    glViewport(0 , 0 , viewWidth , viewHeight);
 }
 
 void VideoApp::onGetViewSize() {
@@ -24,6 +24,11 @@ void VideoApp::onGetViewSize() {
     GLuint bufferIds[1];
     glGenBuffers(1 , bufferIds);
     this->mBufferId = bufferIds[0];
+
+    glBindBuffer(GL_ARRAY_BUFFER , mBufferId);
+    glBufferData(GL_ARRAY_BUFFER ,  3 * 3 * sizeof(float) , mData , GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER , 0);
 }
 
 void VideoApp::render() {
@@ -31,7 +36,12 @@ void VideoApp::render() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glUseProgram(mProgramId);
+    glBindBuffer(GL_ARRAY_BUFFER , this->mBufferId);
+    glVertexAttribPointer(0 , 3 , GL_FLOAT , false , 3 * sizeof(float) , 0);
+    glEnableVertexAttribArray(0);
+    glDrawArrays(GL_TRIANGLES , 0 , 3);
 
+    glDisableVertexAttribArray(0);
 }
 
 void VideoApp::free() {

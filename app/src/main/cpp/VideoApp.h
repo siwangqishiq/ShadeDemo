@@ -14,11 +14,10 @@ private:
     GLuint mProgramId = -1;
     GLuint mBufferId;
 
-    float mData[6]={
-            -1.0  , -1.0 ,
-            1.0 , -1.0,
-            0.0 , 1.0
-                   };
+    float mData[3 * 3]={
+            -1.0  , -1.0 , 0.0,
+            1.0 , -1.0,  0.0,
+            0.0 , 1.0 , 0.0};
 protected:
     int viewWidth;
     int viewHeight;
