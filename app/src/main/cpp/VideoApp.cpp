@@ -17,22 +17,34 @@ void VideoApp::resize(int w, int h) {
 }
 
 void VideoApp::onGetViewSize() {
-    this->mProgramId = loadShaderFromAssets("simple_vert.glsl","simple_frag.glsl");
+    this->mRenderVideoProgramId = loadShaderFromAssets("video_vert.glsl","video_frag.glsl");
+    LOGI("load program id = %d " , this->mRenderVideoProgramId);
 
-    LOGI("load program id = %d " , this->mProgramId);
+    this->mMVPMatrixLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uMVPMatrix");
 
     GLuint bufferIds[1];
     glGenBuffers(1 , bufferIds);
     this->mBufferId = bufferIds[0];
 
-    glBindBuffer(GL_ARRAY_BUFFER , mBufferId);
-    glBufferData(GL_ARRAY_BUFFER ,  3 * 3 * sizeof(float) , mData , GL_STATIC_DRAW);
+    GLuint textures[1];
+    glGenTextures(1 , textures);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, textures[0]);
+    glTexParameterf(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    this->mSurfaceTextureId = textures[0];
 
-    glBindBuffer(GL_ARRAY_BUFFER , 0);
+//    glBindBuffer(GL_ARRAY_BUFFER , mBufferId);
+//    glBufferData(GL_ARRAY_BUFFER ,  3 * 3 * sizeof(float) , mData , GL_STATIC_DRAW);
+//
+//    glBindBuffer(GL_ARRAY_BUFFER , 0);
+
 }
 
 void VideoApp::render() {
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 //    glUseProgram(mProgramId);
@@ -43,15 +55,38 @@ void VideoApp::render() {
 //
 //    glDisableVertexAttribArray(0);
 
+    glUseProgram(this->mRenderVideoProgramId);
 
+    glVertexAttribPointer(0, 2 , GL_FLOAT , false , 2 * sizeof(float) , vertexData);
+    glEnableVertexAttribArray(0);
+
+    glVertexAttribPointer(1, 2 , GL_FLOAT , false , 2 * sizeof(float) , textureCoordData);
+    glEnableVertexAttribArray(1);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES , this->mSurfaceTextureId);
+
+    glDrawArrays(GL_TRIANGLE_FAN , 0 , 4);
+
+    glBindTexture(GL_TEXTURE_2D , 0);
 }
 
 void VideoApp::free() {
     glDeleteProgram(mProgramId);
-    GLuint bufferIds[1];
-    bufferIds[0] = mBufferId;
-    glDeleteBuffers(1 , bufferIds);
+//    GLuint bufferIds[1];
+//    bufferIds[0] = mBufferId;
+//    glDeleteBuffers(1 , bufferIds);
 
+    ASurfaceTexture_detachFromGLContext(this->mSurfaceTexture);
+    ASurfaceTexture_release(this->mSurfaceTexture);
+
+    GLuint  textureIds[1];
+    textureIds[0] = this->mSurfaceTextureId;
+    glDeleteTextures(1 , textureIds);
+
+    if(mSurfaceTexture != nullptr){
+        delete mSurfaceTexture;
+    }
 
     if(mMediaExtractor != nullptr){
         AMediaExtractor_delete(mMediaExtractor);
@@ -106,7 +141,10 @@ void VideoApp::playVideo(std::string path) {
             }
 
             mMediaCodec = AMediaCodec_createDecoderByType(mime);
-            AMediaCodec_configure(this->mMediaCodec , format , nullptr , nullptr , 0);
+
+            ANativeWindow *surface = ASurfaceTexture_acquireANativeWindow(this->mSurfaceTexture);
+
+            AMediaCodec_configure(this->mMediaCodec , format , surface , nullptr , 0);
             addMediaCodecCallback();//添加处理回调
             AMediaCodec_start(this->mMediaCodec);
 
@@ -124,6 +162,16 @@ void VideoApp::addMediaCodecCallback(){
     AMediaCodec_setAsyncNotifyCallback(this->mMediaCodec , mCallback , this);
 }
 
+void VideoApp::setSurfaceTexture(JNIEnv *env , jobject s_texture){
+    if(mSurfaceTexture != nullptr){
+        ASurfaceTexture_release(this->mSurfaceTexture);
+    }
+
+    this->mSurfaceTexture = ASurfaceTexture_fromSurfaceTexture(env , s_texture);
+
+    ASurfaceTexture_attachToGLContext(this->mSurfaceTexture , this->mSurfaceTextureId);
+}
+
 
 void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail){
     LOGE("mediacodec error %d  msg :  %s" , actionCode  , detail);
@@ -134,7 +182,26 @@ void onMediaCodecOnAsyncFormatChanged(AMediaCodec *codec,void *userdata,AMediaFo
 }
 
 void onMediaCodecOnAsyncInputAvailable(AMediaCodec *codec,void *userdata,int32_t index){
+    VideoApp *app = (VideoApp *)userdata;
 
+    ssize_t bufidx = -1;
+    bufidx = AMediaCodec_dequeueInputBuffer(codec , 2000);
+    LOGI("input buffer %zd", bufidx);
+
+    if (bufidx >= 0){
+        size_t bufsize;
+        auto buf = AMediaCodec_getInputBuffer(codec , bufidx , &bufsize);
+        auto sampleSize = AMediaExtractor_readSampleData(app->mMediaExtractor , buf , bufsize);
+
+        if(sampleSize < 0){//文件已经读完了
+            sampleSize = 0;
+            app->mInputEnd = true;
+        }
+
+        int64_t presentationTimeUs = AMediaExtractor_getSampleTime(app->mMediaExtractor);
+        AMediaCodec_queueInputBuffer(codec , bufidx , 0 , sampleSize , presentationTimeUs,
+                app->mInputEnd?AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM:0);
+    }
 }
 
 void onMediaCodecOnAsyncOutputAvailable(AMediaCodec *codec,void *userdata,int32_t index,AMediaCodecBufferInfo *bufferInfo){

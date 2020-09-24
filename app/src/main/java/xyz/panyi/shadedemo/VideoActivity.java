@@ -1,5 +1,6 @@
 package xyz.panyi.shadedemo;
 
+import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;

@@ -1,6 +1,9 @@
 package xyz.panyi.shadedemo;
 
 import android.content.Context;
+import android.graphics.SurfaceTexture;
+import android.opengl.GLES11Ext;
+import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -23,6 +26,8 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
 
     private Callback mCallback;
 
+    private SurfaceTexture mSurfaceTexture;
+
     public VideoSurfaceView(Context context) {
         super(context);
         initView();
@@ -44,6 +49,7 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
         NativeBridge.init();
+        prepareTexture();
     }
 
     @Override
@@ -85,5 +91,36 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
 
     public void openFile(String path){
         NativeBridge.playVideoFile(path);
+
+        requestRender();
     }
+
+    private void prepareTexture(){
+        int textureId = createOesTexture();
+        mSurfaceTexture = new SurfaceTexture(-1);
+
+        NativeBridge.setSurfaceTexture(mSurfaceTexture);
+    }
+
+
+    /**
+     * 创建oes纹理
+     * @return
+     */
+    private int createOesTexture(){
+        int[] textures = new int[1];
+
+        GLES30.glGenTextures(1, textures, 0);
+        GLES30.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textures[0]);
+
+        GLES30.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_LINEAR);
+        GLES30.glTexParameterf(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+
+        GLES30.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE);
+        GLES30.glTexParameteri(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, GL10.GL_TEXTURE_WRAP_T, GL10.GL_CLAMP_TO_EDGE);
+
+        int textureId = textures[0];
+        return textureId;
+    }
+
 }//end class

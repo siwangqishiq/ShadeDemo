@@ -80,4 +80,10 @@ Java_xyz_panyi_shadedemo_NativeBridge_playVideoFile(JNIEnv *env, jclass clazz, j
     if(videoApp != nullptr){
         videoApp->playVideo(path);
     }
+}extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_setSurfaceTexture(JNIEnv *env, jclass clazz,jobject s_texture) {
+    if(videoApp != nullptr){
+        videoApp->setSurfaceTexture(env , s_texture);
+    }
 }

@@ -8,10 +8,14 @@
 #include "Log.h"
 #include "Util.h"
 #include <GLES3/gl3.h>
+#include <GLES2/gl2ext.h>
 #include <string>
 #include <media/NdkMediaExtractor.h>
 #include <media/NdkMediaFormat.h>
 #include <media/NdkMediaCodec.h>
+#include <android/surface_texture.h>
+#include <android/surface_texture_jni.h>
+#include <android/native_window_jni.h>
 
 enum VideoState{
     IDLE,//初始空闲状态
@@ -33,21 +37,48 @@ private:
     GLuint mProgramId = -1;
     GLuint mBufferId;
 
+    GLuint mRenderVideoProgramId;
+
     float mData[3 * 3]={
             -1.0  , -1.0 , 0.0,
             1.0 , -1.0,  0.0,
             0.0 , 1.0 , 0.0};
-protected:
+
+    float vertexData[4 * 2] = {
+            -1.0f , 1.0f ,
+            1.0f , 1.0f ,
+            1.0f , -1.0f,
+            -1.0f , -1.0f
+    };
+
+    float textureCoordData[4 * 2] = {
+            0.0f , 1.0f ,
+            1.0f , 1.0f ,
+            1.0f , 0.0f,
+            0.0f , 0.0f
+    };
+
+    GLint mMVPMatrixLoc;
+    float mMVPMatrix[16];
+
+    GLuint mSurfaceTextureId;
+public:
     int viewWidth;
     int viewHeight;
 
     VideoFileInfo info;
 
     VideoState mState = IDLE;
+
+    ASurfaceTexture *mSurfaceTexture = nullptr;
+
     AMediaExtractor *mMediaExtractor = nullptr;
     AMediaCodec *mMediaCodec = nullptr;
 
     AMediaCodecOnAsyncNotifyCallback mCallback;
+
+    bool mInputEnd = false;
+    bool mOutputEnd = false;
 private:
     void addMediaCodecCallback();
 
@@ -64,6 +95,7 @@ public:
 
     void playVideo(std::string path);
 
+    void setSurfaceTexture(JNIEnv *env , jobject s_texture);
 };
 
 void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail);

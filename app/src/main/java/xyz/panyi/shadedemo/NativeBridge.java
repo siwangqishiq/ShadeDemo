@@ -2,6 +2,7 @@ package xyz.panyi.shadedemo;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.graphics.SurfaceTexture;
 
 public class NativeBridge {
     static {
@@ -9,6 +10,8 @@ public class NativeBridge {
     }
 
     public static native String stringFromJNI();
+
+    public static native void setSurfaceTexture(SurfaceTexture sTexture);
 
     public static native void init();
 
