@@ -8,7 +8,20 @@ import android.view.MotionEvent;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+/**
+ *
+ */
 public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer  {
+
+    public interface Callback{
+        void onSurfaceReady(VideoSurfaceView v);
+    }
+
+    public void setCallback(Callback mCallback) {
+        this.mCallback = mCallback;
+    }
+
+    private Callback mCallback;
 
     public VideoSurfaceView(Context context) {
         super(context);
@@ -36,6 +49,10 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         NativeBridge.resize(width , height);
+
+        if(mCallback != null){
+            mCallback.onSurfaceReady(this);
+        }
     }
 
     @Override
@@ -64,5 +81,9 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
 
         NativeBridge.onTouchEvent(event.getAction() , event.getX() , event.getY());
         return result;
+    }
+
+    public void openFile(String path){
+        NativeBridge.playVideoFile(path);
     }
 }//end class

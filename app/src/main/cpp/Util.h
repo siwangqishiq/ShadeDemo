@@ -18,6 +18,8 @@
 //从Assets中读取文本文件
 std::string readAssetTextFile( const char *filename);
 
+std::string jstring2string(JNIEnv *env, jstring jStr);
+
 //从Assets中载入顶点 片段着色器代码
 GLuint loadShaderFromAssets(const char *vertexPath , const char *fragPath);
 

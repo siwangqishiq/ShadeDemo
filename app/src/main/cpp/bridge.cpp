@@ -71,11 +71,13 @@ Java_xyz_panyi_shadedemo_NativeBridge_setNativeAssertManager(JNIEnv *env, jclass
     //readAssetTextFile("Hello.txt");
 }
 
-
-
-
 extern "C"
 JNIEXPORT void JNICALL
-Java_xyz_panyi_shadedemo_NativeBridge_playVideoFile(JNIEnv *env, jclass clazz, jstring path) {
+Java_xyz_panyi_shadedemo_NativeBridge_playVideoFile(JNIEnv *env, jclass clazz, jstring jpath) {
+    std::string path = jstring2string(env ,  jpath);
+    LOGI("open file %s" , path.c_str());
 
+    if(videoApp != nullptr){
+        videoApp->playVideo(path);
+    }
 }

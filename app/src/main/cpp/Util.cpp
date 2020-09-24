@@ -9,10 +9,8 @@ extern AAssetManager* mAssetManager;
 
 std::string readAssetTextFile( const char *filename){
     AAsset *file = AAssetManager_open(mAssetManager , filename , AASSET_MODE_BUFFER);
-    LOGI("file read1");
+    //LOGI("file read1");
     size_t fileSize = AAsset_getLength(file);
-    LOGI("file read2");
-    LOGI("file length = %zu" , fileSize);
 
     char *fileContentBuf = new char[fileSize + 1];
 
@@ -27,6 +25,25 @@ std::string readAssetTextFile( const char *filename){
 
     LOGI("file content = %s" , contentStr.c_str());
     return contentStr;
+}
+
+std::string jstring2string(JNIEnv *env, jstring jStr) {
+    if (!jStr)
+        return "";
+
+    const jclass stringClass = env->GetObjectClass(jStr);
+    const jmethodID getBytes = env->GetMethodID(stringClass, "getBytes", "(Ljava/lang/String;)[B");
+    const jbyteArray stringJbytes = (jbyteArray) env->CallObjectMethod(jStr, getBytes, env->NewStringUTF("UTF-8"));
+
+    size_t length = (size_t) env->GetArrayLength(stringJbytes);
+    jbyte* pBytes = env->GetByteArrayElements(stringJbytes, nullptr);
+
+    std::string ret = std::string((char *)pBytes, length);
+    env->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
+
+    env->DeleteLocalRef(stringJbytes);
+    env->DeleteLocalRef(stringClass);
+    return ret;
 }
 
 GLuint loadShaderProgram(const char *vShaderSrc, const GLchar *fShaderSrc){
