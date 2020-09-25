@@ -26,4 +26,6 @@ public class NativeBridge {
     public static native void onTouchEvent(int event , float x , float y);
 
     public static native void playVideoFile(String path);
+
+    public static native void onFrameAvailable();
 }

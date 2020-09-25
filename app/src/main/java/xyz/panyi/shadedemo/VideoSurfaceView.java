@@ -14,7 +14,7 @@ import javax.microedition.khronos.opengles.GL10;
 /**
  *
  */
-public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer  {
+public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Renderer, SurfaceTexture.OnFrameAvailableListener {
 
     public interface Callback{
         void onSurfaceReady(VideoSurfaceView v);
@@ -43,7 +43,8 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         setRenderer(this);
 
-        setRenderMode(RENDERMODE_WHEN_DIRTY);
+        //setRenderMode(RENDERMODE_WHEN_DIRTY);
+        setRenderMode(RENDERMODE_CONTINUOUSLY);
     }
 
     @Override
@@ -100,6 +101,13 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
         mSurfaceTexture = new SurfaceTexture(-1);
 
         NativeBridge.setSurfaceTexture(mSurfaceTexture);
+
+        mSurfaceTexture.setOnFrameAvailableListener(this);
+    }
+
+    @Override
+    public void onFrameAvailable(SurfaceTexture surfaceTexture) {
+        NativeBridge.onFrameAvailable();
     }
 
 

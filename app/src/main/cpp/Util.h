@@ -29,4 +29,6 @@ GLuint loadShaderProgram(const char *vShaderSrc, const GLchar *fShaderSrc);
 //根据源码创建指定类型的着色器
 GLuint createShader(GLenum shaderType, const char *src);
 
+int64_t systemnanotime();
+
 #endif //SIMPLEPLAYER_LOG_H

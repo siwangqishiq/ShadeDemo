@@ -79,6 +79,10 @@ public:
 
     bool mInputEnd = false;
     bool mOutputEnd = false;
+    int64_t renderstart;
+
+    int32_t updateTexImageCounter = 0;
+    int32_t updateTexImageCompare = 0;
 private:
     void addMediaCodecCallback();
 
@@ -96,6 +100,8 @@ public:
     void playVideo(std::string path);
 
     void setSurfaceTexture(JNIEnv *env , jobject s_texture);
+
+    void onFrameAvailable();
 };
 
 void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail);

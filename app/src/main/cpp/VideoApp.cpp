@@ -2,7 +2,9 @@
 // Created by Administrator on 2020/9/22.
 //
 
+#include <unistd.h>
 #include "VideoApp.h"
+#include "Util.h"
 
 void VideoApp::init() {
     //wait resize
@@ -55,6 +57,19 @@ void VideoApp::render() {
 //
 //    glDisableVertexAttribArray(0);
 
+    if( updateTexImageCompare != updateTexImageCounter ) {
+        // loop and call updateTexImage() for each time the onFrameAvailable() method was called below.
+        while(updateTexImageCompare != updateTexImageCounter) {
+            ASurfaceTexture_updateTexImage(this->mSurfaceTexture);
+            //surfaceTexture.getTransformMatrix(mSTMatrix);
+            updateTexImageCompare++;  // increment the compare value until it's the same as _updateTexImageCounter
+        }
+    }
+
+    ASurfaceTexture_updateTexImage(this->mSurfaceTexture);
+
+    //LOGI("App Render");
+
     glUseProgram(this->mRenderVideoProgramId);
 
     glVertexAttribPointer(0, 2 , GL_FLOAT , false , 2 * sizeof(float) , vertexData);
@@ -91,6 +106,16 @@ void VideoApp::free() {
     if(mMediaExtractor != nullptr){
         AMediaExtractor_delete(mMediaExtractor);
     }
+
+    if(mMediaExtractor != nullptr){
+        AMediaCodec_stop(mMediaCodec);
+        AMediaCodec_delete(mMediaCodec);
+    }
+}
+
+void VideoApp::onFrameAvailable(){
+    LOGI("VideoApp::onFrameAvailable   ！！！%d" , updateTexImageCounter);
+    this->updateTexImageCounter++;
 }
 
 void VideoApp::playVideo(std::string path) {
@@ -146,8 +171,8 @@ void VideoApp::playVideo(std::string path) {
 
             AMediaCodec_configure(this->mMediaCodec , format , surface , nullptr , 0);
             addMediaCodecCallback();//添加处理回调
-            AMediaCodec_start(this->mMediaCodec);
 
+            AMediaCodec_start(this->mMediaCodec);
             break;
         }
     }//end for i
@@ -178,32 +203,60 @@ void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t e
 }
 
 void onMediaCodecOnAsyncFormatChanged(AMediaCodec *codec,void *userdata,AMediaFormat *format){
-
+    LOGI("onMediaCodecOnAsyncFormatChanged");
 }
 
 void onMediaCodecOnAsyncInputAvailable(AMediaCodec *codec,void *userdata,int32_t index){
+    LOGI("onMediaCodecOnAsyncInputAvailable");
     VideoApp *app = (VideoApp *)userdata;
 
-    ssize_t bufidx = -1;
-    bufidx = AMediaCodec_dequeueInputBuffer(codec , 2000);
-    LOGI("input buffer %zd", bufidx);
+    LOGI("input buffer %zd", index);
 
-    if (bufidx >= 0){
+    if (index >= 0){
         size_t bufsize;
-        auto buf = AMediaCodec_getInputBuffer(codec , bufidx , &bufsize);
-        auto sampleSize = AMediaExtractor_readSampleData(app->mMediaExtractor , buf , bufsize);
+        uint8_t *buf = AMediaCodec_getInputBuffer(codec , index , &bufsize);
+        LOGI("AMediaCodec_getInputBuffer");
+        ssize_t sampleSize = AMediaExtractor_readSampleData(app->mMediaExtractor , buf , bufsize);
 
+        LOGI("get SampleSize %zd" , sampleSize);
         if(sampleSize < 0){//文件已经读完了
             sampleSize = 0;
             app->mInputEnd = true;
         }
 
         int64_t presentationTimeUs = AMediaExtractor_getSampleTime(app->mMediaExtractor);
-        AMediaCodec_queueInputBuffer(codec , bufidx , 0 , sampleSize , presentationTimeUs,
+        LOGI("get AMediaExtractor_getSampleTime %zd" , presentationTimeUs);
+
+        media_status_t status = AMediaCodec_queueInputBuffer(codec , index , 0 , sampleSize , presentationTimeUs,
                 app->mInputEnd?AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM:0);
+        LOGI("AMediaCodec_queueInputBuffer status = %d" , status);
+
+        bool advance = AMediaExtractor_advance(app->mMediaExtractor);
+        LOGI("AMediaExtractor_advance %d" , advance);
     }
 }
 
-void onMediaCodecOnAsyncOutputAvailable(AMediaCodec *codec,void *userdata,int32_t index,AMediaCodecBufferInfo *bufferInfo){
+void onMediaCodecOnAsyncOutputAvailable(AMediaCodec *codec,void *userdata,int32_t index,AMediaCodecBufferInfo *info){
+    LOGI("onMediaCodecOnAsyncOutputAvailable");
+
+    VideoApp *app = (VideoApp *)userdata;
+
+    if(index >= 0){
+        if(info->flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM){
+            LOGI("output AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM");
+            app->mOutputEnd = true;
+        }
+
+        int64_t presentationNano = info->presentationTimeUs * 1000;
+        if(app->renderstart < 0){
+            app->renderstart =  systemnanotime() - presentationNano;
+        }
+        int64_t delay = (app->renderstart + presentationNano) - systemnanotime();
+        if(delay > 0){
+            usleep(delay / 1000);
+        }
+
+        AMediaCodec_releaseOutputBuffer(codec , index , info->size != 0);
+    }
 
 }
