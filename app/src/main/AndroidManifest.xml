@@ -55,6 +55,11 @@
             android:screenOrientation="landscape">
 
         </activity>
+
+        <activity android:name=".PlayVideoActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="landscape">
+        </activity>
     </application>
 
 </manifest>

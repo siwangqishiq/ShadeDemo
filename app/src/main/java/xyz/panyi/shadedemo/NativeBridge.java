@@ -11,11 +11,13 @@ public class NativeBridge {
 
     public static native String stringFromJNI();
 
-    public static native void setSurfaceTexture(SurfaceTexture sTexture);
-
     public static native void init();
 
     public static native void render();
+
+    public static native void prepareVideo(SurfaceTexture sTexture);
+
+    public static native void playVideo();
 
     public static native void resize(int width , int height);
 
@@ -28,4 +30,6 @@ public class NativeBridge {
     public static native void playVideoFile(String path);
 
     public static native void onFrameAvailable();
+
+    public static native void setSurfaceTexture(SurfaceTexture sTexture , int sTextureId);
 }

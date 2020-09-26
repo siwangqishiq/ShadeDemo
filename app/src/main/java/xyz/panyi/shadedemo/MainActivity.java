@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 final String filePath = paths.get(0);
                 System.out.println("filepath = " + filePath);
 
-                Intent it = new Intent(MainActivity.this , VideoActivity.class);
+                Intent it = new Intent(MainActivity.this , PlayVideoActivity.class);
                 it.putExtra("path", filePath);
                 startActivity(it);
             }

@@ -43,8 +43,8 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
         setEGLConfigChooser(8, 8, 8, 8, 16, 0);
         setRenderer(this);
 
-        //setRenderMode(RENDERMODE_WHEN_DIRTY);
-        setRenderMode(RENDERMODE_CONTINUOUSLY);
+        setRenderMode(RENDERMODE_WHEN_DIRTY);
+//        setRenderMode(RENDERMODE_CONTINUOUSLY);
     }
 
     @Override
@@ -98,10 +98,7 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
 
     private void prepareTexture(){
         int textureId = createOesTexture();
-        mSurfaceTexture = new SurfaceTexture(-1);
-
-        NativeBridge.setSurfaceTexture(mSurfaceTexture);
-
+        mSurfaceTexture = new SurfaceTexture(textureId);
         mSurfaceTexture.setOnFrameAvailableListener(this);
     }
 

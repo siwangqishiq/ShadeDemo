@@ -77,21 +77,40 @@ Java_xyz_panyi_shadedemo_NativeBridge_playVideoFile(JNIEnv *env, jclass clazz, j
     std::string path = jstring2string(env ,  jpath);
     LOGI("open file %s" , path.c_str());
 
-    if(videoApp != nullptr){
-        videoApp->playVideo(path);
-    }
-}extern "C"
-JNIEXPORT void JNICALL
-Java_xyz_panyi_shadedemo_NativeBridge_setSurfaceTexture(JNIEnv *env, jclass clazz,jobject s_texture) {
-    if(videoApp != nullptr){
-        videoApp->setSurfaceTexture(env , s_texture);
-    }
+//    if(videoApp != nullptr){
+//        videoApp->playVideo(path);
+//    }
 }
 
 extern "C"
 JNIEXPORT void JNICALL
 Java_xyz_panyi_shadedemo_NativeBridge_onFrameAvailable(JNIEnv *env, jclass clazz) {
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_prepareVideo(JNIEnv *env, jclass clazz) {
     if(videoApp != nullptr){
-        videoApp->onFrameAvailable();
+        //videoApp->setSurfaceTexture(env , s_texture);
+        videoApp->changeState(PREPARE);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_playVideo(JNIEnv *env, jclass clazz) {
+    if(videoApp != nullptr){
+        videoApp->changeState(PLAYING);
+    }
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_setSurfaceTexture(JNIEnv *env, jclass clazz,
+                                                        jobject s_texture, jint s_texture_id) {
+    if(videoApp != nullptr){
+        videoApp->mSurfaceTextureId = s_texture_id;
+        videoApp->mSurfaceTexture = ASurfaceTexture_fromSurfaceTexture(env , s_texture);
     }
 }

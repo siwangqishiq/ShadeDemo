@@ -10,12 +10,13 @@
 #include <GLES3/gl3.h>
 #include <GLES2/gl2ext.h>
 #include <string>
+#include <pthread.h>
 #include <media/NdkMediaExtractor.h>
 #include <media/NdkMediaFormat.h>
 #include <media/NdkMediaCodec.h>
+#include <android/native_window_jni.h>
 #include <android/surface_texture.h>
 #include <android/surface_texture_jni.h>
-#include <android/native_window_jni.h>
 
 enum VideoState{
     IDLE,//初始空闲状态
@@ -58,10 +59,9 @@ private:
             0.0f , 0.0f
     };
 
-    GLint mMVPMatrixLoc;
-    float mMVPMatrix[16];
+    GLint mUniformSTMatrixLoc;
+    float mUniformSTMat[16];
 
-    GLuint mSurfaceTextureId;
 public:
     int viewWidth;
     int viewHeight;
@@ -70,19 +70,9 @@ public:
 
     VideoState mState = IDLE;
 
+    GLuint mSurfaceTextureId;
     ASurfaceTexture *mSurfaceTexture = nullptr;
 
-    AMediaExtractor *mMediaExtractor = nullptr;
-    AMediaCodec *mMediaCodec = nullptr;
-
-    AMediaCodecOnAsyncNotifyCallback mCallback;
-
-    bool mInputEnd = false;
-    bool mOutputEnd = false;
-    int64_t renderstart;
-
-    int32_t updateTexImageCounter = 0;
-    int32_t updateTexImageCompare = 0;
 private:
     void addMediaCodecCallback();
 
@@ -95,21 +85,29 @@ public:
 
     void render();
 
-    void free();
-
     void playVideo(std::string path);
+
+    void changeState(VideoState state);
+
+    void renderIdle();
+
+    void renderPlayVideo();
+
+    void renderPrepareVideo();
+
+    void free();
 
     void setSurfaceTexture(JNIEnv *env , jobject s_texture);
 
     void onFrameAvailable();
 };
 
-void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail);
-
-void onMediaCodecOnAsyncFormatChanged(AMediaCodec *codec,void *userdata,AMediaFormat *format);
-
-void onMediaCodecOnAsyncInputAvailable(AMediaCodec *codec,void *userdata,int32_t index);
-
-void onMediaCodecOnAsyncOutputAvailable(AMediaCodec *codec,void *userdata,int32_t index,AMediaCodecBufferInfo *bufferInfo);
+//void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail);
+//
+//void onMediaCodecOnAsyncFormatChanged(AMediaCodec *codec,void *userdata,AMediaFormat *format);
+//
+//void onMediaCodecOnAsyncInputAvailable(AMediaCodec *codec,void *userdata,int32_t index);
+//
+//void onMediaCodecOnAsyncOutputAvailable(AMediaCodec *codec,void *userdata,int32_t index,AMediaCodecBufferInfo *bufferInfo);
 
 #endif //SHADEDEMO_VIDEOAPP_H
