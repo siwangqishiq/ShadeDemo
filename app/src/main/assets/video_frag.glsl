@@ -11,5 +11,9 @@ out vec4 frag_color;
 void main() {
     vec4 originColor = texture(sTexture, vTextureCoord).rgba;
     //frag_color = originColor;
-    frag_color = vec4(originColor.r , originColor.g , 0.0 , 1.0);
+    if(vTextureCoord.x < 0.5){
+        frag_color = vec4(originColor.r , 0.0 , 0.0 , 1.0);
+    }else{
+        frag_color = originColor;
+    }
 }
