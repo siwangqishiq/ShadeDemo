@@ -35,6 +35,8 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
     private int _updateTexImageCompare = 0;
     private float mTextureMatrix[] = new float[16];
 
+    private long renderStart = -1;
+
     public RenderView(Context context) {
         super(context);
         initView();
@@ -145,8 +147,7 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
         return textureId;
     }
 
-
-    class DecoderThread extends Thread {
+    private class DecoderThread extends Thread {
         final String filepath;
 
         public DecoderThread(String path){
@@ -175,10 +176,8 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
                     System.out.println("mineType = " + mineType);
 
                     if (mineType.startsWith("video/")) {
-                        // Must select the track we are going to get data by readSampleData()
                         mediaExtractor.selectTrack(i);
                         // Set required key for MediaCodec in decoder mode
-                        // Check http://developer.android.com/reference/android/media/MediaFormat.html
                         format.setInteger(MediaFormat.KEY_CAPTURE_RATE, 24);
                         format.setInteger(MediaFormat.KEY_PUSH_BLANK_BUFFERS_ON_STOP, 1);
 
@@ -196,25 +195,20 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
                 mediaDecoder.configure(format , getSurface() ,null , 0 );
                 mediaDecoder.start();
 
-                int timeoutUs = 1_000_000; // 1 second timeout
+                NativeBridge.playVideo();
+
                 boolean eos = false;
-                long playStartTime = System.currentTimeMillis();
-                long frameDisplayTime = playStartTime;
-
-                MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-
                 while (!eos && isDecodeRun) {
-                    NativeBridge.playVideo();
+                    int inputBufferIndex = mediaDecoder.dequeueInputBuffer(2000);
 
-                    int inputBufferIndex = mediaDecoder.dequeueInputBuffer(timeoutUs);
+                    long timeoutUs = 0;
                     if (inputBufferIndex >= 0) {
                         ByteBuffer inputBuffer = mediaDecoder.getInputBuffer(inputBufferIndex);
                         int sampleSize = mediaExtractor.readSampleData(inputBuffer, 0);
 
                         if (sampleSize > 0) {
-                            frameDisplayTime = (mediaExtractor.getSampleTime() >> 10) + playStartTime;
-
-                            mediaDecoder.queueInputBuffer(inputBufferIndex, 0, sampleSize, mediaExtractor.getSampleTime(), 0);
+                            timeoutUs =  mediaExtractor.getSampleTime();
+                            mediaDecoder.queueInputBuffer(inputBufferIndex, 0, sampleSize,timeoutUs, 0);
                             mediaExtractor.advance();
                         } else {
                             mediaDecoder.queueInputBuffer(inputBufferIndex, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
@@ -222,19 +216,26 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
                         }
                     }
 
-                    int outputBufferIndex = mediaDecoder.dequeueOutputBuffer(bufferInfo, timeoutUs);
+                    final MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
+                    int outputBufferIndex = mediaDecoder.dequeueOutputBuffer(bufferInfo, 0);
 
                     if (outputBufferIndex >= 0) {
-                        // Frame rate control
-                        while (frameDisplayTime > System.currentTimeMillis()) {
+                        // fps控制
+                        long presentTimeNano = bufferInfo.presentationTimeUs / 1000;
+
+                        if(renderStart < 0 ){
+                            renderStart = System.currentTimeMillis() - presentTimeNano;
+                        }
+                        long delay = renderStart + presentTimeNano - System.currentTimeMillis();
+                        // System.out.println("delayTime  = " + delay);
+                        if (delay > 0) {
                             try {
-                                sleep(10);
+                                Thread.sleep(delay);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                        }//end while
+                        }
 
-                        // outputBuffer is ready to be processed or rendered.
                         //System.out.println("outputBufferIndex  = " + outputBufferIndex);
                         mediaDecoder.releaseOutputBuffer(outputBufferIndex, true);
                     }
@@ -243,6 +244,7 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
                 mediaExtractor.release();
 
                 mediaDecoder.release();
+
                 isDecodeRun = false;
             } catch (IOException e) {
                 e.printStackTrace();
