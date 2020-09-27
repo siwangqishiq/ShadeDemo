@@ -111,6 +111,30 @@ Java_xyz_panyi_shadedemo_NativeBridge_setSurfaceTexture(JNIEnv *env, jclass claz
                                                         jobject s_texture, jint s_texture_id) {
     if(videoApp != nullptr){
         videoApp->mSurfaceTextureId = s_texture_id;
-        videoApp->mSurfaceTexture = ASurfaceTexture_fromSurfaceTexture(env , s_texture);
+        //videoApp->mSurfaceTexture = ASurfaceTexture_fromSurfaceTexture(env , s_texture);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_updateTextureMatrix(JNIEnv *env, jclass clazz, jfloatArray floatArray) {
+    jfloat *matData = env->GetFloatArrayElements(floatArray , nullptr);
+    if(videoApp != nullptr){
+        for(int i = 0 ; i< 16;i++){
+            videoApp->mUniformSTMat[i] = matData[i];
+        }//end for i
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_setVideoInfo(JNIEnv *env, jclass clazz, jint duration,
+                                                   jint video_width, jint video_height) {
+    if(videoApp != nullptr){
+        videoApp->info.duration = duration;
+        videoApp->info.width = video_width;
+        videoApp->info.height = video_height;
+
+        videoApp->resetVideoVertexData();
     }
 }

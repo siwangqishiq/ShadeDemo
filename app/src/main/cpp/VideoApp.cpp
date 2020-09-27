@@ -26,6 +26,8 @@ void VideoApp::onGetViewSize() {
     LOGI("load mRenderVideoProgramId id = %d " , this->mRenderVideoProgramId);
 
     this->mUniformSTMatrixLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uSTMatrix");
+    this->mUniformEffectTypeLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uEffectType");
+    LOGI("shader mUniformEffectTypeLoc  = %d " , this->mUniformEffectTypeLoc);
 
     GLuint bufferIds[1];
     glGenBuffers(1 , bufferIds);
@@ -73,7 +75,7 @@ void VideoApp::renderPlayVideo() {
 //    ASurfaceTexture_updateTexImage(this->mSurfaceTexture);
     //LOGI("App Render");
 
-    ASurfaceTexture_getTransformMatrix(this->mSurfaceTexture , this->mUniformSTMat);
+    //ASurfaceTexture_getTransformMatrix(this->mSurfaceTexture , this->mUniformSTMat);
 
     glUseProgram(this->mRenderVideoProgramId);
 
@@ -85,6 +87,8 @@ void VideoApp::renderPlayVideo() {
 
     glUniformMatrix4fv(this->mUniformSTMatrixLoc , 1 , false , this->mUniformSTMat);
 
+    glUniform1i(this->mUniformEffectTypeLoc , 1);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES , this->mSurfaceTextureId);
 
@@ -94,7 +98,7 @@ void VideoApp::renderPlayVideo() {
 }
 
 void VideoApp::render() {
-    glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     switch (this->mState){
@@ -128,4 +132,16 @@ void VideoApp::free() {
 
 void VideoApp::changeState(VideoState state) {
     this->mState = state;
+//    if(this->mState == PLAYING){
+//        resetVideoVertexData();
+//    }
+}
+
+/**
+ *  重新计算视频坐标值
+ *
+ */
+void VideoApp::resetVideoVertexData(){
+    LOGI("viewSize %d   x  %d  " , this->viewWidth , this->viewHeight);
+    LOGI("VideoSize %d   x  %d  " , this->info.width , this->info.height );
 }

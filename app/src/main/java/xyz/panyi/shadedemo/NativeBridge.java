@@ -32,4 +32,8 @@ public class NativeBridge {
     public static native void onFrameAvailable();
 
     public static native void setSurfaceTexture(SurfaceTexture sTexture , int sTextureId);
+
+    public static native void updateTextureMatrix(float m[]);
+
+    public static native void setVideoInfo(int duration , int videoWidth , int videoHeight);
 }

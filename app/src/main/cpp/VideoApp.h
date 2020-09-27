@@ -60,7 +60,7 @@ private:
     };
 
     GLint mUniformSTMatrixLoc;
-    float mUniformSTMat[16];
+    GLint mUniformEffectTypeLoc;
 
 public:
     int viewWidth;
@@ -73,10 +73,8 @@ public:
     GLuint mSurfaceTextureId;
     ASurfaceTexture *mSurfaceTexture = nullptr;
 
-private:
-    void addMediaCodecCallback();
+    float mUniformSTMat[16];
 
-public:
     void init();
 
     void onGetViewSize();
@@ -100,6 +98,8 @@ public:
     void setSurfaceTexture(JNIEnv *env , jobject s_texture);
 
     void onFrameAvailable();
+
+    void resetVideoVertexData();
 };
 
 //void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail);
