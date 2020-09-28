@@ -91,8 +91,8 @@ public class VideoSurfaceView extends GLSurfaceView implements GLSurfaceView.Ren
     }
 
     public void openFile(String path){
-        NativeBridge.playVideoFile(path);
 
+        NativeBridge.playVideoFile(path);
         requestRender();
     }
 

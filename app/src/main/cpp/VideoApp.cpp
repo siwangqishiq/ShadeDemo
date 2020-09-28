@@ -37,6 +37,8 @@ void VideoApp::onGetViewSize() {
     this->mUniformSTMatrixLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uSTMatrix");
     this->mUniformEffectTypeLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uEffectType");
     LOGI("shader mUniformEffectTypeLoc  = %d " , this->mUniformEffectTypeLoc);
+    this->mUfmTouchPointLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uTouchPoint");
+    LOGI("shader mUfmTouchXLoc  = %d " , this->mUfmTouchPointLoc);
 
     GLuint bufferIds[1];
     glGenBuffers(1 , bufferIds);
@@ -45,16 +47,6 @@ void VideoApp::onGetViewSize() {
     glBindBuffer(GL_ARRAY_BUFFER , mBufferId);
     glBufferData(GL_ARRAY_BUFFER ,  3 * 3 * sizeof(float) , mData , GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER , 0);
-
-//    GLuint textures[1];
-//    glGenTextures(1 , textures);
-//    glBindTexture(GL_TEXTURE_EXTERNAL_OES, textures[0]);
-//    glTexParameterf(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//    glTexParameterf(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//    glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//    glBindTexture(GL_TEXTURE_2D, 0);
-//    this->mSurfaceTextureId = textures[0];
 }
 
 void VideoApp::renderIdle() {
@@ -98,7 +90,9 @@ void VideoApp::renderPlayVideo() {
 
     glUniformMatrix4fv(this->mUniformSTMatrixLoc , 1 , false , this->mUniformSTMat);
 
-    glUniform1i(this->mUniformEffectTypeLoc , 0);
+    glUniform2f(this->mUfmTouchPointLoc , this->touch_x , this->touch_y);
+
+    glUniform1i(this->mUniformEffectTypeLoc , 1);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES , this->mSurfaceTextureId);
@@ -192,4 +186,9 @@ void VideoApp::resetVideoVertexData(){
             this->vertexData[2] , this->vertexData[3],
             this->vertexData[4] , this->vertexData[5] ,
             this->vertexData[6] , this->vertexData[7] );
+}
+
+void VideoApp::setTouchPoint(float _x , float _y){
+    this->touch_x = _x;
+    this->touch_y = _y;
 }

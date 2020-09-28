@@ -9,6 +9,7 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.Surface;
 
 import java.io.File;
@@ -73,6 +74,7 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
     public void playVideo(String path){
         isDecodeRun = true;
         new DecoderThread(path).start();
+
         NativeBridge.prepareVideo(mSurfaceTextture);
         requestRender();
     }
@@ -102,6 +104,19 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
 
 
         NativeBridge.render();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean result = false;
+        switch (event.getAction()){
+            case MotionEvent.ACTION_DOWN:
+                result = true;
+                break;
+        }
+
+        NativeBridge.onTouchEvent(event.getAction() , event.getX() , event.getY());
+        return result;
     }
 
     @Override

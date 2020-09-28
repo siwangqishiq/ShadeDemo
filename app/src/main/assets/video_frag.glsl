@@ -6,6 +6,7 @@ precision mediump float;
 in vec2 vTextureCoord;
 
 uniform int uEffectType;
+uniform vec2 uTouchPoint;
 
 uniform samplerExternalOES sTexture;
 out vec4 frag_color;
@@ -13,12 +14,17 @@ out vec4 frag_color;
 //灰度
 vec4 effectGray(vec4 color){
     vec4 result;
-    float grayVal = color.r*0.299 + color.g*0.587 + color.b*0.114;
 
-    result.r =  grayVal;
-    result.g = grayVal;
-    result.b = grayVal;
-    result.a = 1.0;
+    if(gl_FragCoord.x <= uTouchPoint.x){
+        float grayVal = color.r*0.299 + color.g*0.587 + color.b*0.114;
+
+        result.r =  grayVal;
+        result.g = grayVal;
+        result.b = grayVal;
+        result.a = 1.0;
+    }else{
+        result = color;
+    }
     return result;
 }
 

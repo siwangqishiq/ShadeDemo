@@ -62,7 +62,10 @@ private:
 
     GLint mUniformSTMatrixLoc;
     GLint mUniformEffectTypeLoc;
+    GLint mUfmTouchPointLoc;
 
+    float touch_x = -1;
+    float touch_y = -1;
 public:
     int viewWidth;
     int viewHeight;
@@ -107,6 +110,8 @@ public:
     void resetVideoVertexData();
 
     void resetLrtpByVideoInfo();
+
+    void setTouchPoint(float _x , float _y);
 };
 
 //void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail);
