@@ -22,20 +22,22 @@ vec4 effectGray(vec4 color){
     return result;
 }
 
+//vec4 effectMosaic(vec4 color , vec2 pos) {
+//}
+
 void main() {
     vec4 originColor = texture(sTexture, vTextureCoord).rgba;
-    //frag_color = originColor;
-//    if(vTextureCoord.x < 0.5){
-//        frag_color = vec4(originColor.r , 0.0 , 0.0 , 1.0);
-//    }else{
-//        frag_color = originColor;
-//    }
     switch(uEffectType){
-        case 0:
+        case 0://正常
         frag_color = originColor;
         break;
-        case 1:
+        case 1://灰度
         frag_color = effectGray(originColor);
+        break;
+        case 2://马赛克
+        break;
+        default:
+        frag_color = originColor;
         break;
     }
 }

@@ -17,6 +17,7 @@
 #include <android/native_window_jni.h>
 #include <android/surface_texture.h>
 #include <android/surface_texture_jni.h>
+#include "Camera.h"
 
 enum VideoState{
     IDLE,//初始空闲状态
@@ -66,12 +67,16 @@ public:
     int viewWidth;
     int viewHeight;
 
+    float left , top , right , bottom;
+
     VideoFileInfo info;
 
     VideoState mState = IDLE;
 
     GLuint mSurfaceTextureId;
     ASurfaceTexture *mSurfaceTexture = nullptr;
+
+    Camera mCamera;
 
     float mUniformSTMat[16];
 
@@ -100,6 +105,8 @@ public:
     void onFrameAvailable();
 
     void resetVideoVertexData();
+
+    void resetLrtpByVideoInfo();
 };
 
 //void onMediaCodecOnAsyncError(AMediaCodec *codec,void *userdata,media_status_t error,int32_t actionCode,const char *detail);
