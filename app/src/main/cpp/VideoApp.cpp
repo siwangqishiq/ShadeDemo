@@ -40,6 +40,9 @@ void VideoApp::onGetViewSize() {
     this->mUfmTouchPointLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uTouchPoint");
     LOGI("shader mUfmTouchXLoc  = %d " , this->mUfmTouchPointLoc);
 
+    this->mUfmMosicSizeLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uMosicSize");
+    this->mUfmTextureSizeLoc = glGetUniformLocation(this->mRenderVideoProgramId , "uTextureSize");
+
     GLuint bufferIds[1];
     glGenBuffers(1 , bufferIds);
     this->mBufferId = bufferIds[0];
@@ -89,10 +92,14 @@ void VideoApp::renderPlayVideo() {
     glEnableVertexAttribArray(1);
 
     glUniformMatrix4fv(this->mUniformSTMatrixLoc , 1 , false , this->mUniformSTMat);
-
     glUniform2f(this->mUfmTouchPointLoc , this->touch_x , this->touch_y);
+    glUniform1i(this->mUfmMosicSizeLoc , 20);
+    float textureWidth = this->right - this->left;
+    float textureHeight = this->top - this->bottom;
+    glUniform2f(this->mUfmTextureSizeLoc , textureWidth , textureHeight);
 
-    glUniform1i(this->mUniformEffectTypeLoc , 1);
+    //effext type
+    glUniform1i(this->mUniformEffectTypeLoc , 2);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES , this->mSurfaceTextureId);

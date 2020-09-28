@@ -59,7 +59,7 @@ Java_xyz_panyi_shadedemo_NativeBridge_free(JNIEnv *env, jclass clazz) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_xyz_panyi_shadedemo_NativeBridge_onTouchEvent(JNIEnv *env, jclass clazz, jint event, jfloat x,jfloat y) {
-    LOGI("surface onTouchEvent event %d (%f , %f)" , event , x , y);
+    // LOGI("surface onTouchEvent event %d (%f , %f)" , event , x , y);
     if(videoApp != nullptr){
         videoApp->setTouchPoint(x , y);
     }

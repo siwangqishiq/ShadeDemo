@@ -64,6 +64,9 @@ private:
     GLint mUniformEffectTypeLoc;
     GLint mUfmTouchPointLoc;
 
+    GLint mUfmTextureSizeLoc;
+    GLint mUfmMosicSizeLoc;
+
     float touch_x = -1;
     float touch_y = -1;
 public:
