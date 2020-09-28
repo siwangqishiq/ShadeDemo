@@ -173,6 +173,7 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
         public void run() {
 
             MediaExtractor mediaExtractor = new MediaExtractor();
+
             try {
                 //final AssetFileDescriptor fileDescriptor = getAssets().openFd("gakki.mp4");
                 //FileDescriptor fileDesp  = new FileDescriptor();

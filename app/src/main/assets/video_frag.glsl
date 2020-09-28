@@ -51,7 +51,7 @@ vec4 effectMosaic(vec4 color) {
     float x_offset = 0.0;
     while(x < 1.0){
         x_offset = x + mosicWidth;
-        if(x > vTextureCoord.x){
+        if(x_offset > vTextureCoord.x){
             break;
         }
         x = x_offset;
@@ -61,7 +61,7 @@ vec4 effectMosaic(vec4 color) {
     float y_offset = 0.0;
     while(y < 1.0){
         y_offset = y + mosicHeight;
-        if(y > vTextureCoord.y){
+        if(y_offset > vTextureCoord.y){
             break;
         }
         y = y_offset;
