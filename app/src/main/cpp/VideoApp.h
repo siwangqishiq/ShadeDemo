@@ -82,6 +82,8 @@ public:
     GLuint mSurfaceTextureId;
     ASurfaceTexture *mSurfaceTexture = nullptr;
 
+    int mEffectType = 0;
+
     Camera mCamera;
 
     float mUniformSTMat[16];

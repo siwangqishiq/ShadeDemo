@@ -3,6 +3,9 @@ package xyz.panyi.shadedemo;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.CompoundButton;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -11,6 +14,8 @@ import androidx.appcompat.app.AppCompatActivity;
  */
 public class PlayVideoActivity extends AppCompatActivity {
     RenderView mRenderView;
+
+    RadioGroup mEffectGroup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,10 +27,20 @@ public class PlayVideoActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_video);
         mRenderView = findViewById(R.id.render_view);
+        mEffectGroup = findViewById(R.id.effect_type_group);
 
         mRenderView.setCallback((v) -> {
             final String path = getIntent().getStringExtra("path");
             mRenderView.playVideo(path);
+        });
+
+        mEffectGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                int index = group.indexOfChild(findViewById(checkedId));
+                System.out.println("checkedId = " + index);
+                NativeBridge.setVideoEffect(index);
+            }
         });
     }
 

@@ -99,7 +99,7 @@ void VideoApp::renderPlayVideo() {
     glUniform2f(this->mUfmTextureSizeLoc , textureWidth , textureHeight);
 
     //effext type
-    glUniform1i(this->mUniformEffectTypeLoc , 3);
+    glUniform1i(this->mUniformEffectTypeLoc , this->mEffectType);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES , this->mSurfaceTextureId);

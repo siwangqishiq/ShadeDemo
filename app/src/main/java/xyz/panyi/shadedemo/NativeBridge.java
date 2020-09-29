@@ -9,6 +9,11 @@ public class NativeBridge {
         System.loadLibrary("demo");
     }
 
+    public static final int  VIDEO_EFFECT_NONE = 0;
+    public static final int  VIDEO_EFFECT_GRAY = 1;
+    public static final int  VIDEO_EFFECT_MOSIAC = 2;
+    public static final int  VIDEO_EFFECT_BLUR = 3;
+
     public static native String stringFromJNI();
 
     public static native void init();
@@ -36,4 +41,6 @@ public class NativeBridge {
     public static native void updateTextureMatrix(float m[]);
 
     public static native void setVideoInfo(int duration , int videoWidth , int videoHeight);
+
+    public static native void setVideoEffect(int effectType);
 }

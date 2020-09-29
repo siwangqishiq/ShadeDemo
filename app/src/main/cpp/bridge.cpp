@@ -141,3 +141,11 @@ Java_xyz_panyi_shadedemo_NativeBridge_setVideoInfo(JNIEnv *env, jclass clazz, ji
         videoApp->resetVideoVertexData();
     }
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_NativeBridge_setVideoEffect(JNIEnv *env, jclass clazz, jint effect_type) {
+    if(videoApp != nullptr){
+        videoApp->mEffectType = effect_type;
+    }
+}

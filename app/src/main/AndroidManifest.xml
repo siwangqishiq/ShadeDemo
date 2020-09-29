@@ -57,7 +57,7 @@
 
         <activity android:name=".PlayVideoActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            android:screenOrientation="sensorLandscape">
+            android:screenOrientation="portrait">
         </activity>
     </application>
 
