@@ -2,20 +2,28 @@ package xyz.panyi.shadedemo;
 
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.media.MediaCodec;
 import android.media.MediaExtractor;
 import android.media.MediaFormat;
 import android.opengl.GLES11Ext;
 import android.opengl.GLES30;
 import android.opengl.GLSurfaceView;
+import android.os.AsyncTask;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.Surface;
+
+import androidx.annotation.NonNull;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.CountDownLatch;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -37,6 +45,8 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
     private float mTextureMatrix[] = new float[16];
 
     private long renderStart = -1;
+
+    private AudioDecoderTask mAudioTask;
 
     public RenderView(Context context) {
         super(context);
@@ -74,6 +84,12 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
     public void playVideo(String path){
         isDecodeRun = true;
         new DecoderThread(path).start();
+
+//        if(mAudioTask != null){
+//            mAudioTask.cancel(true);
+//        }
+//        mAudioTask = new AudioDecoderTask();
+//        mAudioTask.execute(path);
 
         NativeBridge.prepareVideo(mSurfaceTextture);
         requestRender();
@@ -123,6 +139,10 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         isDecodeRun = false;
+
+        if(mAudioTask != null){
+            mAudioTask.cancel(true);
+        }
         NativeBridge.free();
     }
 
@@ -267,4 +287,144 @@ public class RenderView extends GLSurfaceView implements GLSurfaceView.Renderer 
             }
         }
     }//end inner class
+
+    private class AudioDecoderTask extends AsyncTask<String , Void , Integer> {
+        private MediaExtractor extractor;
+        private long duration = 0;
+        private MediaCodec mediaCodec;
+
+        private CountDownLatch countDownLatch;
+
+        private boolean isAudioEnd = false;
+        private int sampleRate;
+
+        private AudioTrack audioTrack;
+
+        @Override
+        protected Integer doInBackground(String... paths) {
+            extractor = new MediaExtractor();
+
+            countDownLatch = new CountDownLatch(1);
+            try {
+
+                String filepath = paths[0];
+                File file = new File(filepath);
+                FileInputStream inputStream = new FileInputStream(file);
+                extractor.setDataSource(inputStream.getFD());
+
+                int numTracks = extractor.getTrackCount();
+                MediaFormat format = null;
+                String mineType = null;
+                for (int i = 0; i < numTracks; i++){
+                    format = extractor.getTrackFormat(i);
+                    mineType =format.getString(MediaFormat.KEY_MIME);
+                    System.out.println("mineType = " + mineType);
+
+                    if(!TextUtils.isEmpty(mineType) && mineType.startsWith("audio")){
+                        extractor.selectTrack(i);
+                        long value = format.getLong(MediaFormat.KEY_DURATION);
+                        duration = value / 1000;
+                        System.out.println("时长 = " + duration);
+
+                        sampleRate = format.getInteger(MediaFormat.KEY_SAMPLE_RATE);
+                        System.out.println("sampleRate = " + sampleRate);
+
+                        break;
+                    }
+                }//end for i
+
+                mediaCodec = MediaCodec.createDecoderByType(mineType);
+
+                int buffsize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+                audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC , sampleRate , AudioFormat.CHANNEL_OUT_STEREO ,
+                        AudioFormat.ENCODING_PCM_16BIT , buffsize , AudioTrack.MODE_STREAM);
+                audioTrack.play();
+
+                mediaCodec.setCallback(new MediaCodec.Callback(){
+                    @Override
+                    public void onInputBufferAvailable(@NonNull MediaCodec codec, int index) {
+                        if(isAudioEnd)
+                            return;
+
+                        final ByteBuffer inputBuf = codec.getInputBuffer(index);
+                        int sampleSize = extractor.readSampleData(inputBuf, 0);
+                        long timestampTemp = extractor.getSampleTime();
+
+                        System.out.println("input sampleSize = "  + sampleSize);
+                        if (sampleSize <= 0){
+                            codec.queueInputBuffer(index, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                            isAudioEnd = true;
+                            countDownLatch.countDown();
+                        }else{
+                            codec.queueInputBuffer(index , 0 , sampleSize , timestampTemp , 0);
+                        }
+                        extractor.advance();
+                    }
+
+                    @Override
+                    public void onOutputBufferAvailable(@NonNull MediaCodec codec, int index, @NonNull MediaCodec.BufferInfo info) {
+                        if(isAudioEnd)
+                            return;
+
+                        final ByteBuffer outputBuf =codec.getOutputBuffer(index);
+                        System.out.println("outData size = "  + info.size+"   index = " + index);
+
+                        byte[] outData = new byte[info.size];
+                        outputBuf.get(outData , 0 , info.size);
+                        codec.releaseOutputBuffer(index, true);
+                        //audioPlayer.play(outData , 0 , outData.length);
+                        audioTrack.write(outData , info.offset , info.offset + info.size);
+                    }
+
+                    @Override
+                    public void onError(@NonNull MediaCodec codec, @NonNull MediaCodec.CodecException e) {
+                        System.out.println("onError ==> " + e.toString());
+                    }
+
+                    @Override
+                    public void onOutputFormatChanged(@NonNull MediaCodec codec, @NonNull MediaFormat format) {
+                        System.out.println("onOutputFormatChanged ==> " + format.getString(MediaFormat.KEY_MIME));
+                    }
+                });
+
+                mediaCodec.configure(format , null , null , 0);
+                mediaCodec.start();
+
+                //mediaCodec.wait(100 * 1000);
+                countDownLatch.await();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return -1;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }  finally {
+                releaseMedia();
+            }
+            return 1;
+        }
+
+        private void releaseMedia(){
+            if(mediaCodec != null){
+                mediaCodec.stop();
+                mediaCodec.release();
+            }
+
+            if(extractor != null){
+                extractor.release();
+            }
+
+            if(audioTrack != null){
+                audioTrack.release();
+            }
+
+            System.out.println("end parse file ...");
+        }
+
+        @Override
+        protected void onCancelled() {
+            isAudioEnd = true;
+            releaseMedia();
+        }
+    }//end inner class
+
 }

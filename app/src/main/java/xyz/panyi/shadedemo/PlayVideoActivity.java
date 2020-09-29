@@ -1,6 +1,8 @@
 package xyz.panyi.shadedemo;
 
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.CompoundButton;
@@ -42,6 +44,12 @@ public class PlayVideoActivity extends AppCompatActivity {
                 NativeBridge.setVideoEffect(index);
             }
         });
+
+        if(this.getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT){
+            mEffectGroup.setVisibility(View.VISIBLE);
+        }else{
+            mEffectGroup.setVisibility(View.GONE);
+        }
     }
 
     public interface Callback {
