@@ -30,7 +30,7 @@ void VideoApp::onGetViewSize() {
     this->mCamera.resetCamera(0 ,0 , this->viewWidth , this->viewHeight);
 
     this->mProgramId = loadShaderFromAssets("simple_vert.glsl","simple_frag.glsl");
-    LOGI("load mProgramId id = %d " , this->mRenderVideoProgramId);
+    LOGI("load mProgramId id = %d " , this->mProgramId);
     this->mRenderVideoProgramId = loadShaderFromAssets("video_vert.glsl","video_frag.glsl");
     LOGI("load mRenderVideoProgramId id = %d " , this->mRenderVideoProgramId);
 
@@ -99,7 +99,7 @@ void VideoApp::renderPlayVideo() {
     glUniform2f(this->mUfmTextureSizeLoc , textureWidth , textureHeight);
 
     //effext type
-    glUniform1i(this->mUniformEffectTypeLoc , 2);
+    glUniform1i(this->mUniformEffectTypeLoc , 3);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_EXTERNAL_OES , this->mSurfaceTextureId);
