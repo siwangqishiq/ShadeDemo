@@ -9,6 +9,8 @@
 #include "Util.h"
 #include "VideoApp.h"
 
+#include "Triangle.h"
+
 
 AAssetManager* mAssetManager;
 VideoApp *videoApp;
@@ -147,5 +149,50 @@ JNIEXPORT void JNICALL
 Java_xyz_panyi_shadedemo_NativeBridge_setVideoEffect(JNIEnv *env, jclass clazz, jint effect_type) {
     if(videoApp != nullptr){
         videoApp->mEffectType = effect_type;
+    }
+}
+
+
+
+
+
+//================ TrigleView =============
+static Triangle *triangle;
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_TriangleBridge_init(JNIEnv *env, jclass clazz) {
+    if(triangle != nullptr){
+        delete triangle;
+    }
+
+    triangle = new Triangle();
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_TriangleBridge_render(JNIEnv *env, jclass clazz) {
+    if(triangle != nullptr){
+        triangle->render();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_TriangleBridge_resize(JNIEnv *env, jclass clazz, jint width, jint height) {
+    if(triangle != nullptr){
+        triangle->resize(width , height);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_TriangleBridge_free(JNIEnv *env, jclass clazz) {
+    if(triangle != nullptr){
+        triangle->free();
+
+        delete triangle;
+        triangle = nullptr;
     }
 }

@@ -20,7 +20,8 @@ add_library( # Sets the name of the library.
         bridge.cpp
         Util.cpp
         VideoApp.cpp
-        Camera.cpp)
+        Camera.cpp
+        Triangle.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
