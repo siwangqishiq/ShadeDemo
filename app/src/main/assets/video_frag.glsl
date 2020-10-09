@@ -166,8 +166,8 @@ void main() {
         frag_color = effectMosaic(originColor);
         break;
         case 3://模糊
-        //frag_color = effectGauss(originColor);
-        frag_color = blur(originColor);
+        frag_color = effectGauss(originColor);
+//        frag_color = blur(originColor);
         break;
         default:
         frag_color = originColor;

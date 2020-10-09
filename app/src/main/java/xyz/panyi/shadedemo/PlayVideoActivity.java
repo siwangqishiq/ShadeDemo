@@ -34,6 +34,8 @@ public class PlayVideoActivity extends AppCompatActivity {
         mRenderView.setCallback((v) -> {
             final String path = getIntent().getStringExtra("path");
             mRenderView.playVideo(path);
+
+            NativeBridge.setVideoEffect(3);
         });
 
         mEffectGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {

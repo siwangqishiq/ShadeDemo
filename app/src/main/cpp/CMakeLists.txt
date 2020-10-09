@@ -21,7 +21,9 @@ add_library( # Sets the name of the library.
         Util.cpp
         VideoApp.cpp
         Camera.cpp
-        Triangle.cpp)
+        Triangle.cpp
+        ImageRender.cpp
+        stb_image.cpp)
 
 # Searches for a specified prebuilt library and stores the path as a
 # variable. Because CMake includes system libraries in the search path by
@@ -46,4 +48,5 @@ target_link_libraries( # Specifies the target library.
         ${OPENGL_LIB}
         android
         ${log-lib}
-        mediandk)
+        mediandk
+        jnigraphics)

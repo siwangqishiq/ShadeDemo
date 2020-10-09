@@ -10,6 +10,7 @@
 #include "VideoApp.h"
 
 #include "Triangle.h"
+#include "ImageRender.h"
 
 
 AAssetManager* mAssetManager;
@@ -194,5 +195,46 @@ Java_xyz_panyi_shadedemo_TriangleBridge_free(JNIEnv *env, jclass clazz) {
 
         delete triangle;
         triangle = nullptr;
+    }
+}
+
+
+
+//============== image
+static ImageRender *imageRender;
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_ImageRenderBridge_init(JNIEnv *env, jclass clazz) {
+    if(imageRender != nullptr){
+        delete imageRender;
+        imageRender = nullptr;
+    }
+
+    imageRender = new ImageRender();
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_ImageRenderBridge_render(JNIEnv *env, jclass clazz) {
+    if(imageRender != nullptr){
+        imageRender->render();
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_ImageRenderBridge_resize(JNIEnv *env, jclass clazz, jint width,jint height) {
+    if(imageRender != nullptr){
+        imageRender->resize(width , height);
+    }
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_xyz_panyi_shadedemo_ImageRenderBridge_free(JNIEnv *env, jclass clazz) {
+    if(imageRender != nullptr){
+        delete imageRender;
+        imageRender = nullptr;
     }
 }

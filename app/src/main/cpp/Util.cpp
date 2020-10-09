@@ -5,6 +5,8 @@
 #include "Util.h"
 #include "Log.h"
 
+#include <android/imagedecoder.h>
+
 extern AAssetManager* mAssetManager;
 
 std::string readAssetTextFile( const char *filename){
@@ -120,6 +122,21 @@ int64_t systemnanotime() {
     timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     return now.tv_sec * 1000000000LL + now.tv_nsec;
+}
+
+unsigned char* readImage(const char *filename , int &image_width , int &image_height , int &channels){
+    AAsset *file = AAssetManager_open(mAssetManager , filename , AASSET_MODE_BUFFER);
+    //LOGI("file read1");
+    size_t fileSize = AAsset_getLength(file);
+    stbi_uc *fileContentBuf = new stbi_uc[fileSize];
+    AAsset_read(file , fileContentBuf , fileSize);
+    //stbi_load_from_memory()
+    unsigned char *data = stbi_load_from_memory(fileContentBuf , fileSize , &image_width ,&image_height , &channels , 0);
+
+    LOGI("read image file %s  %d %d %d" , filename , image_width , image_height , channels);
+    delete[] fileContentBuf;
+    AAsset_close(file);
+    return data;
 }
 
 

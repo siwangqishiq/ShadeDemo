@@ -13,7 +13,9 @@
 #include <string>
 #include <android/asset_manager_jni.h>
 #include <android/asset_manager.h>
+#include <android/imagedecoder.h>
 #include <GLES3/gl3.h>
+#include "stb_image.h"
 
 //从Assets中读取文本文件
 std::string readAssetTextFile( const char *filename);
@@ -30,5 +32,7 @@ GLuint loadShaderProgram(const char *vShaderSrc, const GLchar *fShaderSrc);
 GLuint createShader(GLenum shaderType, const char *src);
 
 int64_t systemnanotime();
+
+unsigned char* readImage(const char *filename , int &image_width , int &image_height , int &channels);
 
 #endif //SIMPLEPLAYER_LOG_H
