@@ -5,8 +5,6 @@
 #include "Util.h"
 #include "Log.h"
 
-#include <android/imagedecoder.h>
-
 extern AAssetManager* mAssetManager;
 
 std::string readAssetTextFile( const char *filename){

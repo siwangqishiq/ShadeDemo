@@ -13,7 +13,6 @@
 #include <string>
 #include <android/asset_manager_jni.h>
 #include <android/asset_manager.h>
-#include <android/imagedecoder.h>
 #include <GLES3/gl3.h>
 #include "stb_image.h"
 
